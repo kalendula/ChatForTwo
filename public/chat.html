@@ -57,8 +57,9 @@ function onBtnClick(){
             if (this.readyState != 4) return;
             update();}
 }
-
 var lastUpdateTime=Date.now();
+var player = document.createElement("audio");
+player.src = "audio/notif.mp3";
 
 function update(){
     xhr.open('GET', 'http://localhost:3000/update?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value+'&time='+lastUpdateTime, true);
@@ -70,6 +71,7 @@ function update(){
             lastUpdateTime=Date.now();
             var history = JSON.parse(this.responseText);
             for (let i = 0 ;i<history.length;i++){
+            if (!(history.length==1 && history[0].from==getCookie("nick"))){player.play();}
             var date = new Date(history[i].time);
             var h = date.getHours();
             var m = date.getMinutes();
