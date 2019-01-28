@@ -1,0 +1,75 @@
+<!DOCTYPE <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+
+</head>
+<body>
+    <h1 style="text-align: center;"><span style="color:#4B0082"><span style="font-size:28px"><span style="font-family:verdana,geneva,sans-serif">Чат на двоих</span></span></span><br/>
+        Вы общаетесь с</h1>
+        <h3>Выбор собеседника: </h3>
+        <select id="talkerSelect"  onChange="javascript:onTalkerSelect();"></select>        
+        <p><textarea disabled cols="100" id="history" rows="20"></textarea></p>
+        <p>
+        <input maxlength="200" id="msg" size="100" type="text" />
+        <input name="send" onclick="onBtnClick()" type="button" value="Отправить!" /></p>
+        <script>
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://localhost:3000/users', true);
+        xhr.send();
+        xhr.onreadystatechange = function() {
+        if (this.readyState != 4) return;
+            var users = JSON.parse(this.responseText);
+            for (let i =0;i<users.length;i++)
+                document.getElementById("talkerSelect").innerHTML+="<option value=\""+users[i].nick+"\">"+users[i].nick+"</option>";  
+        }
+   
+        function onTalkerSelect(){
+        document.getElementById("history").value="downloading...";
+        xhr.open('GET', 'http://localhost:3000/talker?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value, true);
+        xhr.send();
+        xhr.onreadystatechange = function() {
+            if (this.readyState != 4) return;
+            var history = JSON.parse(this.responseText);
+            for (let i = 0 ;i<history.length;i++){
+            var date = new Date(history[i].time);
+            var h = date.getHours();
+            var m = date.getMinutes();
+            var s = date.getSeconds();
+            document.getElementById("history").value=+h+":"+m+":"+s+", from: "+history[i].from+", message: "+history[i].msg; 
+            }
+        }        
+    } 
+
+function onBtnClick(){
+    xhr.open('GET', 'http://localhost:3000/talker?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value+'&msg='+document.getElementById("msg").value, true);
+    xhr.send();
+        xhr.onreadystatechange = function() {
+            if (this.readyState != 4) return;
+            var history = JSON.parse(this.responseText);
+            for (let i = 0 ;i<history.length;i++){
+            var date = new Date(history[i].time);
+            var h = date.getHours();
+            var m = date.getMinutes();
+            var s = date.getSeconds();
+            document.getElementById("history").value=+h+":"+m+":"+s+", from: "+history[i].from+", message: "+history[i].msg; 
+            }
+        }       
+}
+
+ 
+function getCookie(name) {
+  var matches = document.cookie.match(new RegExp(
+    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+  ));
+  return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+    </script>
+
+</body>
+</html>

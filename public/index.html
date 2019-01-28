@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+<title>Tetris Game</title>
+
+</head>
+<body style= background-color:#ffe5b4>
+    <p style="text-align:center"><span style="font-size:20px"><span style="color:#EE82EE">Chat for Two</span></span></p>
+   <div style="text-align:center; vertical-align:middle">
+        <form action="/enter" id="form" method="GET">
+        Your nick:<br>
+        <input type="text" id="nick" name="nick" value=""><br>
+        Your password:<br>
+        <input type="password" id="pass" name="pass" value=""><br>
+        <input type="submit" onclick="msg.call( this )"  id="enter" value="ENTER!">
+        <input type="submit" id="reg" onclick="msg.call( this )" value="REGISTER!">
+      </form> 
+    </div>
+    <script>
+        var whatButtonId="";
+    var object = document.getElementsByTagName("form")[0];
+        function msg() {
+            whatButtonId=this.id; 
+              
+} 
+    var nick = document.getElementById("nick");
+    object.addEventListener("submit", function(event){
+        event.preventDefault()
+        if (document.getElementById("nick").value=="" || document.getElementById("pass").value==""){
+            alert("Your password or nick is empty!");   
+        }
+        else{
+    var x = new XMLHttpRequest();
+    x.open("GET", "http://localhost:3000/users", true);
+    x.onload = function (){
+        var gamer = null;
+        var gamers = JSON.parse(x.responseText);
+        for(var i=0; i<gamers.length; i++){
+        if(gamers[i].nick==document.getElementById("nick").value){
+            gamer = gamers[i];
+            break;
+        }}
+          
+        if (whatButtonId=="reg"){
+            if (gamer){
+                alert("This nick is already taken!");
+            }
+            else {
+                setCookie("nick",document.getElementById("nick").value);
+                object.submit(); 
+            }
+        }
+        else if (whatButtonId=="enter"){
+        if(gamer){
+           if(document.getElementById("pass").value===gamer.pass){
+            setCookie("nick",document.getElementById("nick").value);
+            object.submit();
+           }
+           else {
+               alert("Your password is incorrect!");
+           }
+        }
+        else {
+            alert ("incorrect login!");
+        }
+    } 
+    }
+    }
+    x.send(null);
+    }
+    );
+    function setCookie(name, value) {
+  value = encodeURIComponent(value);
+  var updatedCookie = name + "=" + value;
+  document.cookie = updatedCookie;
+}
+    </script>
+</body>
+</html>
