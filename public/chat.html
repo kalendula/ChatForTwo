@@ -10,7 +10,7 @@
 </head>
 <body>
     <h1 style="text-align: center;"><span style="color:#4B0082"><span style="font-size:28px"><span style="font-family:verdana,geneva,sans-serif">Чат на двоих</span></span></span><br/></h1>
-      <h1 id="headName">  Вы общаетесь с</h1>
+      <h1 id="headName">  Выберите собеседника</h1>
         <h3>Выбор собеседника: </h3>
         <select id="talkerSelect"  onChange="javascript:onTalkerSelect();"></select>        
         <p><textarea disabled cols="100" id="history" rows="20"></textarea></p>
@@ -51,7 +51,7 @@ var isupdate = false;
     } 
 
 function onBtnClick(){
-    xhr.open('GET', 'http://localhost:3000/message?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value+'&msg='+document.getElementById("msg").value, true);
+    xhr.open('POST', 'http://localhost:3000/message?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value+'&msg='+document.getElementById("msg").value, true);
     xhr.send();   
     xhr.onreadystatechange = function() {
             if (this.readyState != 4) return;

@@ -1,15 +1,16 @@
 const fs = require('fs')
-const path = require('path')
-
 var express = require("express");
 var app = express();
+
 app.use(express.static(__dirname + "/public"));
+
 app.get("/users", function(req, res){
     var content = fs.readFileSync("users.json", "utf8");
     var users = JSON.parse(content);
     res.send(users);
 
 });
+
 app.get("/enter", function(req, res){
     var nick = req.param('nick');
     var password = req.param('pass');
@@ -35,6 +36,7 @@ app.get("/enter", function(req, res){
         fs.writeFileSync("users.json", data);
     }
 });
+
 app.get("/talker",  function (req, res) {
     var from=req.param('from');
     var to=req.param('to');
@@ -55,7 +57,7 @@ app.get("/talker",  function (req, res) {
     res.send(hsr);
 });
 
-app.get("/message",  function (req, res) {
+app.post("/message",  function (req, res) {
     var from=req.param('from');
     var to=req.param('to');
     var msg=req.param('msg');
