@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Page Title</title>
+    <title>Chat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
 
 </head>
 <body>
-    <h1 style="text-align: center;"><span style="color:#4B0082"><span style="font-size:28px"><span style="font-family:verdana,geneva,sans-serif">Чат на двоих</span></span></span><br/>
-        Вы общаетесь с</h1>
+    <h1 style="text-align: center;"><span style="color:#4B0082"><span style="font-size:28px"><span style="font-family:verdana,geneva,sans-serif">Чат на двоих</span></span></span><br/></h1>
+      <h1 id="headName">  Вы общаетесь с</h1>
         <h3>Выбор собеседника: </h3>
         <select id="talkerSelect"  onChange="javascript:onTalkerSelect();"></select>        
         <p><textarea disabled cols="100" id="history" rows="20"></textarea></p>
@@ -18,7 +18,6 @@
         <input maxlength="200" id="msg" size="100" type="text" />
         <input name="send" onclick="onBtnClick()" type="button" value="Отправить!" /></p>
         <script>
-
         var xhr = new XMLHttpRequest();
         xhr.open('GET', 'http://localhost:3000/users', true);
         xhr.send();
@@ -28,7 +27,7 @@
             for (let i =0;i<users.length;i++)
                 document.getElementById("talkerSelect").innerHTML+="<option value=\""+users[i].nick+"\">"+users[i].nick+"</option>";  
         }
-   
+var isupdate = false;
         function onTalkerSelect(){
         document.getElementById("history").value="downloading...";
         xhr.open('GET', 'http://localhost:3000/talker?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value, true);
@@ -41,27 +40,45 @@
             var h = date.getHours();
             var m = date.getMinutes();
             var s = date.getSeconds();
-            document.getElementById("history").value=+h+":"+m+":"+s+", from: "+history[i].from+", message: "+history[i].msg; 
+            document.getElementById("history").value+="\n"+h+":"+m+":"+s+", from: "+history[i].from+", message: "+history[i].msg; 
             }
-        }        
+            if (!isupdate){
+                updateTimer = setInterval(update,1000);
+                isupdate=true;
+            }
+        }
+        document.getElementById("headName").innerHTML="Вы общаетесь с "+document.getElementById("talkerSelect").value;     
     } 
 
 function onBtnClick(){
-    xhr.open('GET', 'http://localhost:3000/talker?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value+'&msg='+document.getElementById("msg").value, true);
+    xhr.open('GET', 'http://localhost:3000/message?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value+'&msg='+document.getElementById("msg").value, true);
+    xhr.send();   
+    xhr.onreadystatechange = function() {
+            if (this.readyState != 4) return;
+            update();}
+}
+
+var lastUpdateTime=Date.now();
+
+function update(){
+    xhr.open('GET', 'http://localhost:3000/update?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value+'&time='+lastUpdateTime, true);
     xhr.send();
         xhr.onreadystatechange = function() {
             if (this.readyState != 4) return;
+            if (this.responseText==""){}
+            else{
+            lastUpdateTime=Date.now();
             var history = JSON.parse(this.responseText);
             for (let i = 0 ;i<history.length;i++){
             var date = new Date(history[i].time);
             var h = date.getHours();
             var m = date.getMinutes();
             var s = date.getSeconds();
-            document.getElementById("history").value=+h+":"+m+":"+s+", from: "+history[i].from+", message: "+history[i].msg; 
+            document.getElementById("history").value+="\n"+h+":"+m+":"+s+", from: "+history[i].from+", message: "+history[i].msg; 
             }
-        }       
+         }
+        }    
 }
-
  
 function getCookie(name) {
   var matches = document.cookie.match(new RegExp(

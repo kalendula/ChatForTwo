@@ -54,161 +54,45 @@ app.get("/talker",  function (req, res) {
     }
     res.send(hsr);
 });
-app.delete("/submit/users/:id", function(req, res){
-      
-    var id = req.params.id;
-    var nick = "";
-    var data = fs.readFileSync("users.json", "utf8");
-    var users = JSON.parse(data);
-    var index = -1;
-    for(var i=0; i<users.length; i++){
-        if(users[i].id==id){
-            nick = users[i].nick;
-            index=i;
-            break;
+
+app.get("/message",  function (req, res) {
+    var from=req.param('from');
+    var to=req.param('to');
+    var msg=req.param('msg');
+    var path1 = __dirname+"/chatHistory/"+from+"-"+to+".json";
+    var path2 = __dirname+"/chatHistory/"+to+"-"+from+".json";
+    var content = fs.readFileSync(path1, "utf8");
+    var msgs = JSON.parse(content);
+    var str = {from: from, time: Date.now(), msg: msg};
+    msgs.push(str);
+    var data = JSON.stringify(msgs);
+    fs.writeFileSync(path1,data);
+    fs.writeFileSync(path2,data);
+    res.send(msgs[msgs.length-1]);
+});
+
+app.get("/update",  function (req, res) {
+    var from=req.param('from');
+    var to=req.param('to');
+    var time=req.param('time');
+    var path1 = __dirname+"/chatHistory/"+from+"-"+to+".json";
+    var content = fs.readFileSync(path1, "utf8");
+    var msgs = JSON.parse(content);
+    var update = [];
+    for (let i = 0; i < msgs.length;i++){
+        if (msgs[i].time>time){
+            update.push(msgs[i]);
         }
     }
-    if(index > -1){
-        var user = users.splice(index, 1)[0];
-        var data1 = fs.readFileSync("attempts.json", "utf8");
-        var attempts = JSON.parse(data1);
-        for(let j=0; j<attempts.length; j++){
-        if (deleteCascade(nick)){continue;}
-        break;
+    if (update.length==0){
+        res.send("");
     }
-        var data = JSON.stringify(users);
-        fs.writeFileSync("users.json", data);
-        res.send(user);
+    else {
+        res.send(update);
     }
-    else{
-        res.status(404).send();
-    }
-});
-app.put("/submit/users",  function(req, res){
-      
-    if(!req.body) return res.sendStatus(400);
-     
-    var userId = req.body.id;
-    var nick = req.body.nick;
-    var time = req.body.time;
-     
-    var data = fs.readFileSync("users.json", "utf8");
-    var users = JSON.parse(data);
-    var user;
-    for(var i=0; i<users.length; i++){
-        if(users[i].id==userId){
-            user = users[i];
-            break;
-        }
-    }
-    if(user){
-        user.nick = nick;
-        user.time = time;
-        var data = JSON.stringify(users);
-        fs.writeFileSync("users.json", data);
-        res.send(user);
-    }
-    else{
-        res.status(404).send(user);
-    }
-});
-
-
-app.get("/submit/att", function(req, res){
-    var content = fs.readFileSync("attempts.json", "utf8");
-    var attempts = JSON.parse(content);
-    res.send(attempts);
-
-});
-
-app.get("/submit/attempts/:id", function(req, res){
-      
-    var id = req.params.id; 
-    var content = fs.readFileSync("attempts.json", "utf8");
-    var attempts = JSON.parse(content);
-    var attempt = null;
-    for(var i=0; i<attempts.length; i++){
-        if(attempts[i].id==id){
-            attempt = attempts[i];
-            break;
-        }
-    }
-    if(attempt){
-        res.send(attempt);
-    }
-    else{
-        res.status(404).send();
-    }
-});
-
-app.post("/submit/attempts", function (req, res) {
-     
-    if(!req.body) return res.sendStatus(400);
     
-    var nick = req.body.nick;
-    var time = req.body.time;
-    var attempt = {nick: nick, time: time};
-     
-    var data = fs.readFileSync("attempts.json", "utf8");
-    var attempts = JSON.parse(data);
-     
-    var id = Math.max.apply(Math,attempts.map(function(o){return o.id;}))
-    attempt.id = id+1;
-    attempts.push(attempt);
-    var data = JSON.stringify(attempts);
-    fs.writeFileSync("attempts.json", data);
-    res.send(attempt);
 });
-app.delete("/submit/attempts/:id", function(req, res){
-      
-    var id = req.params.id;
-    var data = fs.readFileSync("attempts.json", "utf8");
-    var attempts = JSON.parse(data);
-    var index = -1;
-    for(var i=0; i<attempts.length; i++){
-        if(attempts[i].id==id){
-            index=i;
-            break;
-        }
-    }
-    if(index > -1){
-        var attempt = attempts.splice(index, 1)[0];
-        var data = JSON.stringify(attempts);
-        fs.writeFileSync("attempts.json", data);
-        res.send(attempt);
-    }
-    else{
-        res.status(404).send();
-    }
-});
-app.put("/attempts",  function(req, res){
-      
-    if(!req.body) return res.sendStatus(400);
-     
-    var attemptId = req.body.id;
-    var nick = req.body.nick;
-    var time = req.body.time;
-     
-    var data = fs.readFileSync("attempts.json", "utf8");
-    var attempts = JSON.parse(data);
-    var attempt;
-    for(var i=0; i<attempts.length; i++){
-        if(attempts[i].id==attemptId){
-            attempt = attempts[i];
-            break;
-        }
-    }
-    if(attempt){
-        attempt.nick = nick;
-        attempt.time = time;
-        var data = JSON.stringify(attempts);
-        fs.writeFileSync("attempts.json", data);
-        res.send(attempt);
-    }
-    else{
-        res.status(404).send(attempt);
-    }
-});
+
 
 app.listen(3000, function(){
     console.log("Сервер ожидает подключения...");
