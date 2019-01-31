@@ -18,8 +18,9 @@
         <input maxlength="200" id="msg" size="100" type="text" />
         <input name="send" onclick="onBtnClick()" type="button" value="Отправить!" /></p>
         <script>
+        var myIP = "192.168.1.5";
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'http://localhost:3000/users', true);
+        xhr.open('GET', 'http://'+myIP+':3000/users', true);
         xhr.send();
         xhr.onreadystatechange = function() {
         if (this.readyState != 4) return;
@@ -30,17 +31,19 @@
 var isupdate = false;
         function onTalkerSelect(){
         document.getElementById("history").value="downloading...";
-        xhr.open('GET', 'http://localhost:3000/talker?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value, true);
+        xhr.open('GET', 'http://'+myIP+':3000/talker?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value, true);
         xhr.send();
         xhr.onreadystatechange = function() {
             if (this.readyState != 4) return;
             var history = JSON.parse(this.responseText);
+            if (history.length==0) document.getElementById("history").value="nothing here!";
+            else document.getElementById("history").value="";
             for (let i = 0 ;i<history.length;i++){
             var date = new Date(history[i].time);
             var h = date.getHours();
             var m = date.getMinutes();
             var s = date.getSeconds();
-            document.getElementById("history").value+="\n"+h+":"+m+":"+s+", from: "+history[i].from+", message: "+history[i].msg; 
+            document.getElementById("history").value+="\n"+h+":"+m+":"+s+", from: "+history[i].from+", message: "+history[i].message; 
             }
             if (!isupdate){
                 updateTimer = setInterval(update,1000);
@@ -51,25 +54,27 @@ var isupdate = false;
     } 
 
 function onBtnClick(){
-    xhr.open('POST', 'http://localhost:3000/message?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value+'&msg='+document.getElementById("msg").value, true);
+    xhr.open('POST', 'http://'+myIP+':3000/message?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value+'&msg='+document.getElementById("msg").value, true);
     xhr.send();   
     xhr.onreadystatechange = function() {
             if (this.readyState != 4) return;
-            update();}
+            update();
+        document.getElementById("msg").value="";
+        }
 }
 var lastUpdateTime=Date.now();
 var player = document.createElement("audio");
 player.src = "audio/notif.mp3";
 
 function update(){
-    xhr.open('GET', 'http://localhost:3000/update?from='+getCookie("nick")+'&to='+document.getElementById("talkerSelect").value+'&time='+lastUpdateTime, true);
+    xhr.open('GET', `http://${myIP}:3000/update?from=${getCookie("nick")}&to=${document.getElementById("talkerSelect").value}&time=${lastUpdateTime+""}`, true);
     xhr.send();
         xhr.onreadystatechange = function() {
             if (this.readyState != 4) return;
             if (this.responseText==""){}
             else{
-            lastUpdateTime=Date.now();
             var history = JSON.parse(this.responseText);
+            if (history.length>0)lastUpdateTime=history[history.length-1].time;
             for (let i = 0 ;i<history.length;i++){
             if (!(history.length==1 && history[0].from==getCookie("nick"))){player.play();}
             var date = new Date(history[i].time);

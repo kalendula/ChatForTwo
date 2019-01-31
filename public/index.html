@@ -13,12 +13,15 @@
         Your nick:<br>
         <input type="text" id="nick" name="nick" value=""><br>
         Your password:<br>
-        <input type="password" id="pass" name="pass" value=""><br>
+        <input type="password" id="pass" name="pass" value=""> <br>
+        <input type="hidden" name="isRegister" id="isRegister"  value="0">  
+        <br>
         <input type="submit" onclick="msg.call( this )"  id="enter" value="ENTER!">
         <input type="submit" id="reg" onclick="msg.call( this )" value="REGISTER!">
       </form> 
     </div>
     <script>
+        var myIP = "192.168.1.5";
         var whatButtonId="";
     var object = document.getElementsByTagName("form")[0];
         function msg() {
@@ -33,18 +36,19 @@
         }
         else{
     var x = new XMLHttpRequest();
-    x.open("GET", "http://localhost:3000/users", true);
+    x.open("GET", "http://"+myIP+":3000/users", true);
     x.onload = function (){
-        var gamer = null;
-        var gamers = JSON.parse(x.responseText);
-        for(var i=0; i<gamers.length; i++){
-        if(gamers[i].nick==document.getElementById("nick").value){
-            gamer = gamers[i];
+        var user = null;
+        var users = JSON.parse(x.responseText);
+        for(var i=0; i<users.length; i++){
+        if(users[i].nick==document.getElementById("nick").value){
+            user = users[i];
             break;
         }}
           
         if (whatButtonId=="reg"){
-            if (gamer){
+            document.getElementById("isRegister").value = "1";
+            if (user){
                 alert("This nick is already taken!");
             }
             else {
@@ -53,8 +57,9 @@
             }
         }
         else if (whatButtonId=="enter"){
-        if(gamer){
-           if(document.getElementById("pass").value===gamer.pass){
+            document.getElementById("isRegister").value = "0";
+        if(user){
+           if(document.getElementById("pass").value===user.pass){
             setCookie("nick",document.getElementById("nick").value);
             object.submit();
            }

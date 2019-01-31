@@ -2,13 +2,14 @@
   "name": "chatfortwo",
   "version": "1.0.0",
   "description": "chat for two people",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "kale ndula",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "sqlite3": "^4.0.6"
   }
 }
